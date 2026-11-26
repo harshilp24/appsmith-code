@@ -75,6 +75,8 @@ class ButtonWidget extends BaseWidget<ButtonWidgetProps, ButtonWidgetState> {
       isDefaultClickDisabled: true,
       disabledWhenInvalid: false,
       resetFormOnClick: false,
+      confirmBeforeClick: false,
+      confirmationMessage: "Are you sure you want to continue?",
       recaptchaType: RecaptchaTypes.V3,
       version: 1,
       responsiveBehavior: ResponsiveBehavior.Hug,
@@ -208,6 +210,29 @@ class ButtonWidget extends BaseWidget<ButtonWidgetProps, ButtonWidgetState> {
             isBindProperty: true,
             isTriggerProperty: false,
             validation: { type: ValidationTypes.BOOLEAN },
+          },
+          {
+            propertyName: "confirmBeforeClick",
+            label: "Confirm before click",
+            controlType: "SWITCH",
+            helpText:
+              "Asks users to confirm before the onClick event runs. Useful for actions that delete or change data",
+            isJSConvertible: true,
+            isBindProperty: true,
+            isTriggerProperty: false,
+            validation: { type: ValidationTypes.BOOLEAN },
+          },
+          {
+            propertyName: "confirmationMessage",
+            label: "Confirmation message",
+            controlType: "INPUT_TEXT",
+            helpText: "The message shown when users are asked to confirm",
+            placeholderText: "Are you sure you want to continue?",
+            isBindProperty: true,
+            isTriggerProperty: false,
+            validation: { type: ValidationTypes.TEXT },
+            hidden: (props: ButtonWidgetProps) => !props.confirmBeforeClick,
+            dependencies: ["confirmBeforeClick"],
           },
           {
             propertyName: "animateLoading",
@@ -584,6 +609,15 @@ class ButtonWidget extends BaseWidget<ButtonWidgetProps, ButtonWidgetState> {
   }
 
   onButtonClick() {
+    if (
+      this.props.confirmBeforeClick &&
+      !window.confirm(
+        this.props.confirmationMessage || "Are you sure you want to continue?",
+      )
+    ) {
+      return;
+    }
+
     if (this.props.onClick) {
       this.setState({
         isLoading: true,
@@ -716,6 +750,8 @@ export interface ButtonWidgetProps extends WidgetProps {
   placement?: ButtonPlacement;
   disabledWhenInvalid?: boolean;
   resetFormOnClick?: boolean;
+  confirmBeforeClick?: boolean;
+  confirmationMessage?: string;
   labelStyle?: string;
   labelTextColor?: string;
   labelTextSize?: string;
